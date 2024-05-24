@@ -1,0 +1,24 @@
+.largeImageContainer {
+    position: relative;
+    width: 500px;
+    height: 500px;
+  }
+  
+  .smallImageContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .smallImageWrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--rotation));
+  }
+  
+  .smallImage {
+    border-radius: 50%;
+  }
+  
