@@ -16,14 +16,14 @@ const Navbar = () => {
   };
 
   return (
-    <header className="h-[70px] w-full bg-black flex justify-between items-center px-2 lg:px-10 fixed">
+    <header className="h-[70px] w-full flex justify-between items-center px-2 lg:px-10 fixed z-[1000]">
       <div className="text-white flex space-x-2">
         <Link href="/">
           <h1>Doctor Agent</h1>
         </Link>
       </div>
       <div className="text-white space-x-2">
-        {user ? ( 
+        {/* {user ? ( 
           <div className="flex items-center gap-2 text-white relative p-2"  onMouseLeave={()=>{setUserMenu(false);}} onMouseOver={()=>{setUserMenu(true);}}>
             <i class="fa-solid fa-circle-user text-3xl"></i>
             <div className={`absolute top-10 right-2/4 rounded-lg z-[100] bg-lightblack p-4 gap-2 border ${userMenu?"":"hidden"}`}>
@@ -42,7 +42,7 @@ const Navbar = () => {
               <button className="border border-cyan-600 hover:border-2 hover:shadow-[0_0px_10px_2px_#06b6d4] p-2 rounded-lg transform hover:scale-[1.1]">Sign Up</button>
             </Link>
           </>
-        )}
+        )} */}
       </div>
     </header>
   );

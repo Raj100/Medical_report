@@ -2,7 +2,7 @@
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 import Content from "../components/Content/Content";
-import ChatBot from "../components/ChatBot/ChatBot";
+// import ChatBot from "../components/ChatBot/ChatBot";
 // import SideMenu from "../components/SideMenu/SideMenu";
 import BottomBar from "@/components/BottomBar/BottomBar";
 import Lamp from "@/components/ui/Lamp";
@@ -64,7 +64,6 @@ export default function Home() {
       <JoinWaitList></JoinWaitList>
       <BottomBar></BottomBar>
       <Footer></Footer>
-      <BottomBar></BottomBar>
     </div>
   );
 }
