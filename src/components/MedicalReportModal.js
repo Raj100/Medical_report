@@ -6,23 +6,51 @@ import "jspdf-autotable";
 Modal.setAppElement('body');
 
 const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript }) => {
-  const formatExtractedInfo = () => {
-    return Object.entries(extractedInfo).map(([key, value]) => ({
-      title: key,
-      data: value.length > 0 ? value.join(", ") : "N/A",
-    }));
+  const parseExtractedInfo = (dataString) => {
+    if (typeof dataString !== 'string') {
+      console.error("Expected dataString to be a string but received:", typeof dataString);
+      return {};
+    }
+
+    const dataWithoutFirstLine = dataString.split("\n").slice(1).join("\n");
+
+    const sections = dataWithoutFirstLine.split("\n\n## ");
+    const info = {};
+
+    sections.forEach(section => {
+      const lines = section.split("\n");
+      const sectionTitle = lines.shift().replace("## ", "").trim();
+      info[sectionTitle] = lines.map(line => line.replace(/- /, "").trim());
+    });
+    console.log(info);
+    return info;
+  };
+
+  const formatExtractedInfo = (parsedInfo) => {
+    const formattedInfo = [];
+
+    Object.entries(parsedInfo).forEach(([sectionTitle, details]) => {
+      details.forEach(detail => {
+        const [field, information] = detail.split(": ");
+        formattedInfo.push({
+          title: field,
+          data: information ? information.replace(/\. /g, ".\n") : "",
+        });
+      });
+    });
+
+    return formattedInfo;
   };
 
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.text("Medical Report", 14, 16);
-    // doc.text(`Transcript: ${transcript}`, 14, 26);
 
-    const formattedInfo = formatExtractedInfo();
+    const formattedInfo = formatExtractedInfo(parsedInfo);
     const data = formattedInfo.map(info => [info.title, info.data]);
 
     doc.autoTable({
-      startY: 36, 
+      startY: 36,
       head: [['Field', 'Information']],
       body: data,
     });
@@ -30,7 +58,8 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
     doc.save('medical_report.pdf');
   };
 
-  const formattedInfo = formatExtractedInfo();
+  const parsedInfo = parseExtractedInfo(extractedInfo);
+  const formattedInfo = formatExtractedInfo(parsedInfo);
 
   return (
     <Modal
@@ -50,7 +79,7 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
           {formattedInfo.map((info, index) => (
             <div key={index} className="mb-2">
               <h4 className="text-lg font-semibold">{info.title}</h4>
-              <p>{info.data}</p>
+              <pre>{info.data}</pre>
             </div>
           ))}
         </div>
