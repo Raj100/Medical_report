@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
 import IconSideMenu from "@/components/IconSideMenu/IconSideMenu";
@@ -15,16 +15,37 @@ const Page = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [extractedInfo, setExtractedInfo] = useState({});
   const [transcript, setTranscript] = useState("");
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioBlob, setAudioBlob] = useState(null);
+
+  useEffect(() => {
+    const handleDataAvailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        setAudioBlob(event.data);
+      }
+    };
+
+    if (mediaRecorder) {
+      mediaRecorder.addEventListener("dataavailable", handleDataAvailable);
+      return () => {
+        mediaRecorder.removeEventListener("dataavailable", handleDataAvailable);
+      };
+    }
+  }, [mediaRecorder]);
 
   const handleChange = (event) => {
     setFile(event.target.files[0]);
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file && !audioBlob) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+    if (file) {
+      formData.append('file', file);
+    } else if (audioBlob) {
+      formData.append('file', audioBlob, 'recording.wav');
+    }
 
     const loadingToastId = toast.loading("Uploading and Processing file...", {
       position: "top-right",
@@ -64,6 +85,27 @@ const Page = () => {
     }
   };
 
+  const handleRecord = async () => {
+    if (record) {
+      // Stop recording
+      mediaRecorder.stop();
+      setRecord(false);
+    } else {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        setMediaRecorder(recorder);
+        setAudioBlob(null);
+        recorder.start();
+        setRecord(true);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+        toast.error("Error accessing microphone. Please allow microphone access.");
+      }
+    }
+  };
+
   return (
     <main className="bg-black min-h-screen flex flex-col">
       <Navbar />
@@ -77,13 +119,13 @@ const Page = () => {
       <div className={`${open && "ml-20"} bg-black flex flex-wrap h-full gap-8 p-4 lg:p-8 items-center justify-center`}>
         <div className="grow flex"></div>
         <div className="w-full flex items-center justify-center pb-10">
-          {/* <div
-            onClick={() => { setRecord(!record); }}
-            className="w-16 h-16 rounded-full border-2 border-cyan-500 flex items-center justify-center text-xl text-white hover:border-2 hover:shadow-[0_0px_10px_2px_#06b6d4] transform hover:scale-[1.1]"
+          <div
+            onClick={handleRecord}
+            className={`w-16 h-16 rounded-full border-2 border-cyan-500 flex items-center justify-center text-xl text-white hover:border-2 hover:shadow-[0_0px_10px_2px_#06b6d4] transform hover:scale-[1.1] cursor-pointer ${record ? 'bg-red-500' : 'bg-green-500'}`}
           >
             <i className={`fa-solid ${record ? "fa-microphone" : "fa-microphone-slash"}`}></i>
           </div>
-          <h1 className="text-white px-2">or</h1> */}
+          <h1 className="text-white px-2">or</h1>
           <input className="text-white" type="file" accept="audio/*" onChange={handleChange} />
           <button className="p-4 bg-blue-500 text-white rounded-3xl" onClick={handleUpload}>
             Upload
