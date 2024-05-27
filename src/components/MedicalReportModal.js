@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from "react-modal";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -22,7 +22,6 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
       const sectionTitle = lines.shift().replace("## ", "").trim();
       info[sectionTitle] = lines.map(line => line.replace(/- /, "").trim());
     });
-    console.log(info);
     return info;
   };
 
@@ -42,12 +41,39 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
     return formattedInfo;
   };
 
+  const [checkedFields, setCheckedFields] = useState({});
+  const [editingFields, setEditingFields] = useState({});
+  const [editedInfo, setEditedInfo] = useState({});
+
+  const handleCheckboxChange = (title) => {
+    setCheckedFields(prevState => ({
+      ...prevState,
+      [title]: !prevState[title]
+    }));
+  };
+
+  const handleEditChange = (title, newData) => {
+    setEditedInfo(prevState => ({
+      ...prevState,
+      [title]: newData
+    }));
+  };
+
+  const toggleEdit = (title) => {
+    setEditingFields(prevState => ({
+      ...prevState,
+      [title]: !prevState[title]
+    }));
+  };
+
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.text("Medical Report", 14, 16);
 
     const formattedInfo = formatExtractedInfo(parsedInfo);
-    const data = formattedInfo.map(info => [info.title, info.data]);
+    const data = formattedInfo
+      .filter(info => checkedFields[info.title])
+      .map(info => [info.title, editedInfo[info.title] || info.data]);
 
     doc.autoTable({
       startY: 36,
@@ -77,9 +103,33 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
         </div>
         <div>
           {formattedInfo.map((info, index) => (
-            <div key={index} className="mb-2">
-              <h4 className="text-lg font-semibold">{info.title}</h4>
-              <pre>{info.data}</pre>
+            <div key={index} className="mb-2 flex items-start">
+              <input
+                type="checkbox"
+                checked={!!checkedFields[info.title]}
+                onChange={() => handleCheckboxChange(info.title)}
+                className="mr-2 mt-1"
+              />
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-lg font-semibold">{info.title}</h4>
+                  <button
+                    onClick={() => toggleEdit(info.title)}
+                    className="ml-2 text-blue-500 underline"
+                  >
+                    {editingFields[info.title] ? "Save" : "Edit"}
+                  </button>
+                </div>
+                {editingFields[info.title] ? (
+                  <textarea
+                    value={editedInfo[info.title] || info.data}
+                    onChange={(e) => handleEditChange(info.title, e.target.value)}
+                    className="w-full mt-2 p-2 border rounded"
+                  />
+                ) : (
+                  <pre>{editedInfo[info.title] || info.data}</pre>
+                )}
+              </div>
             </div>
           ))}
         </div>

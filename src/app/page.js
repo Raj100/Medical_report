@@ -22,7 +22,7 @@ export default function Home() {
       {/* <ChatBot></ChatBot> */}
       <Lamp>
       </Lamp>
-      {/* <Meteors number={25} ></Meteors> */}
+      <Meteors number={25} ></Meteors>
       <div className="flex gap-10 p-4 bg">
       <div className="w-32 h-[600px] lg:w-[600px]">
       {/* <Canvas>
