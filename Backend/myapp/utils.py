@@ -1,36 +1,25 @@
-import speech_recognition as sr
 import os
+import speech_recognition as sr
 from dotenv import load_dotenv
 import cohere
 from uagents import Agent, Context, Protocol, Model
-
 
 load_dotenv()
 
 api_key = os.getenv('COHERE_API_KEY')
 co = cohere.Client(api_key)
 
-
-def transcribe_audio(audio_data):
+def transcribe_audio(audio_file_path):
     recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_file_path) as source:
+        audio_data = recognizer.record(source)
     try:
-        recognized_text = recognizer.recognize_google(audio_data) 
-        return recognized_text
+        transcript = recognizer.recognize_google(audio_data, language="en-US")
+        return transcript
     except sr.UnknownValueError:
-        print("Could not understand audio")
         return ""
     except sr.RequestError as e:
-        print(f"Error fetching results from Google Speech Recognition service; {e}")
         return ""
-
-
-def create_analysis_uagent(agent_name):
-    context = Context(name="analysis_context") 
-    protocol = Protocol("tcp")
-    model = Model("basic")
-    analysis_agent = Agent(name=agent_name, context=context, protocol=protocol, model=model)
-    return analysis_agent
-
 
 def extract_medical_info(transcript):
     prompt = f"""
@@ -77,4 +66,32 @@ def extract_medical_info(transcript):
         prompt=prompt,
         max_tokens=300
     )
+    return response.generations[0].text.strip()
 
+class TranscriptRequest(Model):
+    audio_path: str
+
+class TranscriptResponse(Model):
+    transcript: str
+    extracted_info: str
+
+class ErrorResponse(Model):
+    error: str
+
+MedicalTranscriptionAgent = Agent(
+    name="MedicalTranscriptionAgent",
+    port=8001,
+    seed="Medical Transcription Agent"
+)
+
+@MedicalTranscriptionAgent.on_query(model=TranscriptRequest, replies={TranscriptResponse, ErrorResponse})
+async def handle_transcription_request(ctx: Context, sender: str, request: TranscriptRequest):
+    try:
+        transcript = transcribe_audio(request.audio_path)
+        extracted_info = extract_medical_info(transcript)
+        await ctx.send(sender, TranscriptResponse(transcript=transcript, extracted_info=extracted_info))
+    except Exception as e:
+        await ctx.send(sender, ErrorResponse(error=str(e)))
+
+if __name__ == "__main__":
+    MedicalTranscriptionAgent.run()
