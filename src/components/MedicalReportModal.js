@@ -12,7 +12,6 @@ const MedicalReportModal = ({ isOpen, onRequestClose, extractedInfo, transcript 
 
   const parseExtractedInfo = (dataString) => {
     if (typeof dataString !== 'string') {
-      console.error("Expected dataString to be a string but received:", typeof dataString);
       return {};
     }
 

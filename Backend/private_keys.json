@@ -2,5 +2,9 @@
     "medical-information-agent": {
         "identity_key": "dac829e98fd45056f0abf5e13cebb4b3d67111d3bde589a737593b37315d0c49",
         "wallet_key": "BR3u2D1bsbTHd4aBLJj9rIeG+Pf71+C8A3JXTKHSTnk="
+    },
+    "MedicalInfoAgent": {
+        "identity_key": "326ad2e40e89cabe32107dc1e5466764de5aa3783167ab32f5e24abdbd3d31f7",
+        "wallet_key": "z94wOPeLdiuXo4zklY/ue85EpmePSWE7uzXTBie612w="
     }
 }

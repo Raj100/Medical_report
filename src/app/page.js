@@ -10,10 +10,6 @@ import Meteors from "@/components/ui/Meteors";
 import RotatingImages from "@/components/RotatingImages/RotatingImages";
 import Image from "next/image";
 import JoinWaitList from "@/components/JoinWaitList/JoinWaitList";
-import { Canvas } from "@react-three/fiber";
-import { Loader, OrbitControls, Stars } from "@react-three/drei";
-import { useGLTF } from "@react-three/drei";
-import { Environment } from "@react-three/drei";
 export default function Home() {
   return (
     <div className="bg-black">
@@ -49,7 +45,7 @@ export default function Home() {
       <div className="my-20 grid grid-cols-1 md:grid-cols-2 text-white gap-20 md:gap-0 px-2 lg:px-8 flex flex-col items-center justify-center">
         <div>
           <h1 className="text-2xl">Features</h1>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum accusamus rerum explicabo? Iste possimus ipsa non, provident tempora dolorem cumque earum aliquam optio vero hic corrupti quaerat, laboriosam autem odit iure id?</p>
+          <ul></ul>
         </div>
         <div className="flex items-center justify-center">
           <Image

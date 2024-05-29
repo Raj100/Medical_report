@@ -1,10 +1,10 @@
 import asyncio
+from asgiref.sync import async_to_sync
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import AudioFile
-from .utils import transcribe_audio, query_agent, extract_medical_info
-from .serializers import AudioFileSerializer
+from .utils import agent
 
 @api_view(['POST'])
 def upload_audio(request):
@@ -13,32 +13,30 @@ def upload_audio(request):
     
     audio_file = request.FILES['file']
     audio_instance = AudioFile.objects.create(file=audio_file)
-    transcript = transcribe_audio(audio_instance.file.path)
+    
+    transcript = async_to_sync(transcribe_audio_with_agent)(audio_instance.file.path)
+    print(transcript)
+    
     extracted_info = {}
-    try:
-        agent_response = asyncio.run(query_agent(audio_instance.file.path))
-        if isinstance(agent_response, dict):
-            extracted_info.update(agent_response)
-        else:
-            extracted_info['agent_error'] = agent_response
-    except Exception as e:
-        extracted_info['agent_error'] = f"Agent query error: {str(e)}"
     
     try:
         if transcript and 'Transcription error' not in transcript:
-            medical_info = extract_medical_info(transcript)
+            medical_info = async_to_sync(extract_medical_info_with_agent)(transcript)
             extracted_info['medical_info'] = medical_info
     except Exception as e:
         extracted_info['medical_info_error'] = f"Medical info extraction error: {str(e)}"
-
-    transcript = transcribe_audio(audio_instance.file.path)
-    extracted_info = extract_medical_info(transcript)
 
     return Response({
         "transcript": transcript,
         "extracted_info": extracted_info
     }, status=status.HTTP_200_OK)
 
+async def transcribe_audio_with_agent(audio_file_path):
+    context = {"audio_file_path": audio_file_path}
+    response = await agent.handle("transcribe_audio", context)
+    return response.get('transcript', 'Transcription error')
 
-
-
+async def extract_medical_info_with_agent(transcript):
+    context = {"transcript": transcript}
+    response = await agent.handle("extract_medical_info", context)
+    return response.get('medical_info', 'Medical info extraction error')

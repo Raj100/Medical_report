@@ -10,20 +10,15 @@ const JoinWaitList = () => {
         </h1>
         <p></p>
         <p className="text-neutral-500 max-w-lg mx-auto my-2 text-sm text-center relative z-10">
-          {/* Introducing ChatAi, your ultimate destination to connect with AI
-          friends tailored just for you, ages 10-25! Dive into a world of
-          endless conversations, laughter, and companionship. ChatAi offers a
-          safe and engaging environment where you can chat about anything and
-          everything that interests you. Whether you're seeking advice, sharing
-          stories, or simply looking for a buddy to talk to, ChatAi is here to
-          listen and respond with empathy and understanding. Join us and
-          experience the future of socializing with AI companions who are always
-          there for you, 24/7. */}
-          Welcome to ChatAi, your personalized hub for connecting with AI
-          friends aged 10-25! Engage in endless conversations, share stories,
-          seek advice, or simply enjoy companionship in a safe and engaging
-          environment. Experience the future of socializing with AI companions
-          who are here for you 24/7. Join us now!
+          Welcome to MedicalReportAssistant, your dedicated platform crafted to
+          streamline medical transcription and reporting processes! Seamlessly
+          transcribe doctor-patient conversations, organize vital information,
+          and generate comprehensive medical reports with ease. Whether it's
+          documenting appointments, compiling patient histories, or analyzing
+          vital signs, MedicalReportAssistant is your trusted ally. Experience
+          the efficiency of AI-powered assistance tailored for medical
+          professionals. Join us now and simplify your medical documentation
+          tasks!
         </p>
         <input
           type="text"
