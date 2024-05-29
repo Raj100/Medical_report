@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
 import IconSideMenu from "@/components/IconSideMenu/IconSideMenu";
@@ -7,6 +7,7 @@ import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MedicalReportModal from "@/components/MedicalReportModal";
+import Recorder from 'recorder-js';
 
 const Page = () => {
   const [open, setOpen] = useState(false);
@@ -15,30 +16,20 @@ const Page = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [extractedInfo, setExtractedInfo] = useState({});
   const [transcript, setTranscript] = useState("");
-  const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
-
-  useEffect(() => {
-    const handleDataAvailable = (event) => {
-      if (event.data && event.data.size > 0) {
-        setAudioBlob(event.data);
-      }
-    };
-
-    if (mediaRecorder) {
-      mediaRecorder.addEventListener("dataavailable", handleDataAvailable);
-      return () => {
-        mediaRecorder.removeEventListener("dataavailable", handleDataAvailable);
-      };
-    }
-  }, [mediaRecorder]);
+  
+  const audioContextRef = useRef(new (window.AudioContext || window.webkitAudioContext)());
+  const recorderRef = useRef(null);
 
   const handleChange = (event) => {
     setFile(event.target.files[0]);
   };
 
   const handleUpload = async () => {
-    if (!file && !audioBlob) return;
+    if (!file && !audioBlob) {
+      toast.error("No file or recording to upload.");
+      return;
+    }
 
     const formData = new FormData();
     if (file) {
@@ -88,16 +79,22 @@ const Page = () => {
   const handleRecord = async () => {
     if (record) {
       // Stop recording
-      mediaRecorder.stop();
+      console.log("Stopping recording...");
+      recorderRef.current.stop().then(({ blob }) => {
+        setAudioBlob(blob);
+        console.log("Recording stopped and processed");
+      });
       setRecord(false);
     } else {
       // Start recording
       try {
+        console.log("Starting recording...");
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
-        setMediaRecorder(recorder);
+        recorderRef.current = new Recorder(audioContextRef.current);
+        recorderRef.current.init(stream);
+        recorderRef.current.start();
         setAudioBlob(null);
-        recorder.start();
+        console.log("Recording started...");
         setRecord(true);
       } catch (error) {
         console.error("Error accessing microphone:", error);
@@ -113,7 +110,7 @@ const Page = () => {
         <div className="hidden lg:block z-10 px-2" onClick={() => setOpen(!open)}>
           <i className={`px-4 cursor-pointer fa-solid ${open ? "fa-arrow-left fixed" : "fa-bars"}`}></i>
         </div>
-        <h1 className="grow font-jacquard">Upload your voice</h1>
+        <h1 className="grow font-jacquard">Record/Upload your voice</h1>
       </div>
       <IconSideMenu isOpen={open} />
       <div className={`${open && "ml-20"} bg-black flex flex-wrap h-full gap-8 p-4 lg:p-8 items-center justify-center`}>
@@ -121,7 +118,7 @@ const Page = () => {
         <div className="w-full flex items-center justify-center pb-10">
           <div
             onClick={handleRecord}
-            className={`w-16 h-16 rounded-full border-2 border-cyan-500 flex items-center justify-center text-xl text-white hover:border-2 hover:shadow-[0_0px_10px_2px_#06b6d4] transform hover:scale-[1.1] cursor-pointer ${record ? 'bg-red-500' : 'bg-green-500'}`}
+            className={`shrink-0	 w-16 h-16 rounded-full border-2 border-cyan-500 flex items-center justify-center text-xl text-white hover:border-2 hover:shadow-[0_0px_10px_2px_#06b6d4] transform hover:scale-[1.1] cursor-pointer ${record ? 'bg-red-500' : 'bg-green-500'}`}
           >
             <i className={`fa-solid ${record ? "fa-microphone" : "fa-microphone-slash"}`}></i>
           </div>
@@ -133,7 +130,6 @@ const Page = () => {
         </div>
       </div>
       <ToastContainer />
-
       <MedicalReportModal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
