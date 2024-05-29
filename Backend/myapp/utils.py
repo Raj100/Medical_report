@@ -14,7 +14,7 @@ co = cohere.Client(api_key)
 def transcribe_audio(audio_data):
     recognizer = sr.Recognizer()
     try:
-        recognized_text = recognizer.recognize_google(audio_data)  # Example using Google Speech Recognition
+        recognized_text = recognizer.recognize_google(audio_data) 
         return recognized_text
     except sr.UnknownValueError:
         print("Could not understand audio")
@@ -25,8 +25,7 @@ def transcribe_audio(audio_data):
 
 
 def create_analysis_uagent(agent_name):
-    # Replace with your Fetch.ai network details (assuming configured)
-    context = Context(name="analysis_context")  # Replace with your context name (if needed)
+    context = Context(name="analysis_context") 
     protocol = Protocol("tcp")
     model = Model("basic")
     analysis_agent = Agent(name=agent_name, context=context, protocol=protocol, model=model)
