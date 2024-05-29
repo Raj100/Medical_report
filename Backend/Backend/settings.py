@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-rng(a01x!&*c6&qz(x+p$xel0w(2q!v8@!^exn7qmd1fmdaln5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'https://medical-report-tau.vercel.app', 'your-heroku-app.herokuapp.com']
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1', 'localhost', 'https://medical-report-tau.vercel.app']
 
 # Application definition
 
@@ -134,3 +134,25 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+]
+# Allow credentials to be included in requests
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS'
+]
+
+# Allow specific HTTP headers
+CORS_ALLOW_HEADERS = [
+    'Accept',
+    'Content-Type',
+    'Authorization',
+    'X-CSRFToken',]

@@ -1,16 +1,21 @@
 import speech_recognition as sr
+import os
+from dotenv import load_dotenv
 import cohere
+from uagents import Agent, Context, Protocol, Model
 
-api_key = 'ApzrdoGPGL8J67z6D5OSWLuS1QntWPBRzvA4xx44'
+
+load_dotenv()
+
+api_key = os.getenv('COHERE_API_KEY')
 co = cohere.Client(api_key)
 
-def transcribe_audio(audio_file_path):
+
+def transcribe_audio(audio_data):
     recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_file_path) as source:
-        audio_data = recognizer.record(source)
     try:
-        transcript = recognizer.recognize_google(audio_data, language="en-US")
-        return transcript
+        recognized_text = recognizer.recognize_google(audio_data)  # Example using Google Speech Recognition
+        return recognized_text
     except sr.UnknownValueError:
         print("Could not understand audio")
         return ""
@@ -18,50 +23,24 @@ def transcribe_audio(audio_file_path):
         print(f"Error fetching results from Google Speech Recognition service; {e}")
         return ""
 
+
+def create_analysis_uagent(agent_name):
+    # Replace with your Fetch.ai network details (assuming configured)
+    context = Context(name="analysis_context")  # Replace with your context name (if needed)
+    protocol = Protocol("tcp")
+    model = Model("basic")
+    analysis_agent = Agent(name=agent_name, context=context, protocol=protocol, model=model)
+    return analysis_agent
+
+
 def extract_medical_info(transcript):
     prompt = f"""
-Here is the transcription of the doctor-patient conversation:
+    Here is the transcription of the doctor-patient conversation:
 
-{transcript}
+    {transcript}
 
-Using the transcription above, organize the data into the following categories in a short, concise format:
+    Using the transcription above, organize the data into the following categories in a short, concise format:
 
-## Appointment Notes:
-- Reason for visit:
-- Onset of symptoms:
-- Palliating or Provoking Factors:
-- Region Affected:
-- Severity of Symptoms:
-- Time course of symptoms:
-- Follow-up plan:
-- Physical Symptoms:
-- Inferred summary by the doctor:
-
-## History:
-- Medical History:
-- Surgery History:
-- Family Medical History:
-- Medication History:
-- Social History:
-- Known Allergies:
-- Interaction with Sick People:
-- Current Medication:
-- Menstruation History:
-- Lifestyle Changes in the Recent Past:
-- List of Vaccinations:
-- Dosages:
-- Hospitalization:
-
-## Vitals:
-- Blood Pressure:
-- Heart Rate:
-- Respiratory Rate:
-- Temperature:
-
-Please format the output as follows:
-
-Here is the information from the doctor-patient conversation organized into the requested categories:
-    
     ## Appointment Notes:
     - Reason for visit: [Reason for visit]
     - Onset of symptoms: [Onset of symptoms]
@@ -100,4 +79,3 @@ Here is the information from the doctor-patient conversation organized into the 
         max_tokens=300
     )
 
-    return response.generations[0].text.strip()
